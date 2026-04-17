@@ -1,0 +1,41 @@
+id,name,category,quantity,price
+SKU-001,Wireless Mouse,Electronics,45,29.99
+SKU-002,USB-C Hub,Electronics,23,49.99
+SKU-003,Mechanical Keyboard,Electronics,12,129.99
+SKU-004,Monitor Stand,Office,67,39.99
+SKU-005,Desk Lamp,Office,34,24.99
+SKU-006,Ergonomic Chair,Office,8,299.99
+SKU-007,Standing Desk Mat,Office,56,44.99
+SKU-008,Webcam HD,Electronics,19,79.99
+SKU-009,Noise Canceling Headphones,Electronics,3,199.99
+SKU-010,Laptop Sleeve,Electronics,89,19.99
+SKU-011,Running Shoes,Fitness,41,89.99
+SKU-012,Yoga Mat,Fitness,78,29.99
+SKU-013,Resistance Bands Set,Fitness,92,14.99
+SKU-014,Foam Roller,Fitness,54,24.99
+SKU-015,Water Bottle,Fitness,120,12.99
+SKU-016,Cotton T-Shirt,Clothing,200,19.99
+SKU-017,Hoodie,Clothing,65,49.99
+SKU-018,Running Shorts,Clothing,88,34.99
+SKU-019,Winter Jacket,Clothing,15,129.99
+SKU-020,Wool Socks 3-Pack,Clothing,145,14.99
+SKU-021,Coffee Maker,Kitchen,28,79.99
+SKU-022,Blender,Kitchen,42,59.99
+SKU-023,Toaster,Kitchen,37,39.99
+SKU-024,Chef Knife Set,Kitchen,19,89.99
+SKU-025,Cast Iron Skillet,Kitchen,63,44.99
+SKU-026,Garden Hose,Outdoor,47,29.99
+SKU-027,Patio Chair,Outdoor,24,79.99
+SKU-028,BBQ Grill,Outdoor,11,249.99
+SKU-029,Camping Tent,Outdoor,18,149.99
+SKU-030,Sleeping Bag,Outdoor,33,69.99
+SKU-031,Plant Pot Set,Home & Garden,85,24.99
+SKU-032,LED String Lights,Home & Garden,112,15.99
+SKU-033,Throw Blanket,Home & Garden,67,34.99
+SKU-034,Wall Art Print,Home & Garden,43,29.99
+SKU-035,Scented Candle Set,Home & Garden,156,19.99
+SKU-036,Wireless Earbuds,Electronics,5,79.99
+SKU-037,Portable Charger,Electronics,72,34.99
+SKU-038,Smart Watch,Electronics,2,199.99
+SKU-039,Tablet Stand,Electronics,91,19.99
+SKU-040,HDMI Cable,Electronics,234,9.99
