@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Viewer — Keboola Data App</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stat-card.warning .value { color: var(--warning); }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            width: 240px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--surface);
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: #f8fafc;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .text-right { text-align: right; }
+
+        .low-stock {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.error { background: var(--danger); }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        /* Error */
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            color: #dc2626;
+            margin-bottom: 24px;
+        }
+
+        .error-message code {
+            display: block;
+            margin-top: 8px;
+            padding: 8px;
+            background: #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                📦 Inventory Viewer
+                <span class="badge">Input Mapping</span>
+            </h1>
+        </div>
+
+        <div id="error-container"></div>
+
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="label">Total Products</div>
+                <div class="value" id="stat-total">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Categories</div>
+                <div class="value" id="stat-categories">—</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="label">Low Stock (≤5)</div>
+                <div class="value" id="stat-low-stock">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Total Value</div>
+                <div class="value" id="stat-value">—</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Products</h2>
+                <div class="filters">
+                    <input type="text" class="search-input" id="search" placeholder="Search by name or ID...">
+                    <select id="category-filter">
+                        <option value="all">All categories</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table">
+                        <tr>
+                            <td colspan="5">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading products...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer">
+                <div class="status-indicator">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Checking connection...</span>
+                </div>
+                <span id="showing-count">—</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let allProducts = [];
+        let categories = [];
+
+        // DOM elements
+        const searchInput = document.getElementById('search');
+        const categoryFilter = document.getElementById('category-filter');
+        const productsTable = document.getElementById('products-table');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const showingCount = document.getElementById('showing-count');
+        const errorContainer = document.getElementById('error-container');
+
+        // Fetch products
+        async function loadProducts() {
+            const search = searchInput.value.trim();
+            const category = categoryFilter.value;
+
+            try {
+                const params = new URLSearchParams();
+                if (search) params.set('search', search);
+                if (category && category !== 'all') params.set('category', category);
+
+                const response = await fetch(`/api/products?${params}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    showError(data.error);
+                    return;
+                }
+
+                allProducts = data.products;
+                renderProducts(allProducts);
+                showingCount.textContent = `Showing ${allProducts.length} products`;
+                clearError();
+
+            } catch (error) {
+                showError(`Failed to load products: ${error.message}`);
+            }
+        }
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+
+                if (data.success) {
+                    categories = data.categories;
+                    categoryFilter.innerHTML = '<option value="all">All categories</option>';
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        categoryFilter.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('stat-total').textContent = data.stats.total.toLocaleString();
+                    document.getElementById('stat-categories').textContent = data.stats.categories;
+                    document.getElementById('stat-low-stock').textContent = data.stats.low_stock;
+                    document.getElementById('stat-value').textContent = '$' + data.stats.total_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Health check
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    statusDot.classList.remove('error');
+                    statusText.textContent = `Connected · ${data.row_count} rows from input mapping`;
+                } else {
+                    statusDot.classList.add('error');
+                    statusText.textContent = data.error || 'Connection issue';
+                }
+            } catch (error) {
+                statusDot.classList.add('error');
+                statusText.textContent = 'Failed to connect';
+            }
+        }
+
+        // Render products table
+        function renderProducts(products) {
+            if (products.length === 0) {
+                productsTable.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <h3>No products found</h3>
+                                <p>Try adjusting your search or filter.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            productsTable.innerHTML = products.map(product => {
+                const isLowStock = product.quantity <= 5;
+                const quantityCell = isLowStock 
+                    ? `<span class="low-stock">${product.quantity}</span>`
+                    : product.quantity;
+
+                return `
+                    <tr>
+                        <td><code>${escapeHtml(product.id)}</code></td>
+                        <td>${escapeHtml(product.name)}</td>
+                        <td>${escapeHtml(product.category || '—')}</td>
+                        <td class="text-right">${quantityCell}</td>
+                        <td class="text-right">$${parseFloat(product.price || 0).toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Error handling
+        function showError(message) {
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>Error loading data</strong>
+                    <code>${escapeHtml(message)}</code>
+                </div>
+            `;
+        }
+
+        function clearError() {
+            errorContainer.innerHTML = '';
+        }
+
+        // Utility
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        // Debounce
+        function debounce(fn, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', debounce(loadProducts, 300));
+        categoryFilter.addEventListener('change', loadProducts);
+
+        // Initial load
+        async function init() {
+            await checkHealth();
+            await loadCategories();
+            await loadStats();
+            await loadProducts();
+        }
+
+        init();
+    </script>
+</body>
+</html>
